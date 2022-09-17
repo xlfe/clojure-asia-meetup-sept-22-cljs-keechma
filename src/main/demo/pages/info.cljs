@@ -1,8 +1,9 @@
 (ns demo.pages.info
   (:require                                                                                                                                                
 
-    [keechma.next.helix.core :refer [use-sub]]
+    [keechma.next.helix.core :refer [use-sub dispatch]]
     [demo.helix :refer [defnc]]
+    [keechma.next.controllers.router :as router]
     [clojure.string]
 
     [helix.hooks :refer [use-state]]
@@ -10,6 +11,7 @@
 
     ["@mui/material/TextField" :default TextField]
 
+    ["@mui/material/Button" :default Button]
     ["@mui/material/Paper" :default Paper]
     ["@mui/material/Divider" :default Divider]
     ["@mui/material/Typography" :default Typography]
@@ -25,12 +27,21 @@
   [props]
   (let [{:keys [paragraphs]} (use-sub props :app)
         {:keys [id]:as router} (use-sub props :router)
-        {:keys [title id text]} (get paragraphs (js/parseInt id))
+        id (js/parseInt id)
+        {:keys [title text]} (get paragraphs id)
         [para-title set-para-title] (use-state title)]
 
+    (debug id)
     ($ Container
       {:maxWidth "2xl"}
       ($ TextField
-        {:onChange #(set-para-title (oget % "target.value"))
-         :value para-title}))))
+        {:label "Title"
+         :onChange #(set-para-title (oget % "target.value"))
+         :value para-title})
 
+      ($ Button
+        {:onClick #(dispatch props :app :update [id {:title para-title}])}
+        "Save")
+      ($ Button
+        {:onClick #(router/redirect! props :router {:page "home"})}
+        "Cancel"))))

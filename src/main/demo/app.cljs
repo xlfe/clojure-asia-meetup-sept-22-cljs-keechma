@@ -6,20 +6,21 @@
     [demo.pages.info :as info]
 
     [keechma.next.core :as keechma]
-    [keechma.next.helix.core :refer [KeechmaRoot]]
-    [keechma.next.controller :as ctrl]
     [keechma.next.controllers.router :as router]
+    [keechma.next.controller :as ctrl]
+    [keechma.next.helix.core :refer [KeechmaRoot dispatch]]
 
     [helix.core :as hx :refer [$]]
 
     ["react" :as react]
     ["react-dom/client" :as rdom]
 
-    [taoensso.timbre :as timbre :refer-macros [debug info warn error]]))
+    [taoensso.timbre :as timbre :refer-macros [debug]]))
 
 
 (def li 
-  {1 {:title "First" :text "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse iaculis euismod ligula at ultrices. Morbi varius nec nisi vitae lobortis. Mauris vestibulum elit sit amet metus vestibulum volutpat. Donec eu facilisis tortor. Aliquam lacinia dolor non justo congue interdum. Nam turpis magna, congue vel faucibus sed, lobortis nec risus. Aenean sed ipsum vehicula, commodo purus ac, facilisis velit. Etiam suscipit ex ex, et euismod libero cursus at. Praesent ac sagittis ipsum. Morbi in commodo quam. Donec massa libero, tincidunt eu nunc vel, ullamcorper elementum tellus. Vestibulum at porta lacus. Sed id fermentum turpis, et euismod nibh. Donec rutrum nulla id nunc facilisis lacinia. Phasellus in dui porta, laoreet tellus sollicitudin, laoreet nibh. Proin vulputate nec ex eget viverra."} 
+  {1 {:title "First" 
+      :text "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse iaculis euismod ligula at ultrices. Morbi varius nec nisi vitae lobortis. Mauris vestibulum elit sit amet metus vestibulum volutpat. Donec eu facilisis tortor. Aliquam lacinia dolor non justo congue interdum. Nam turpis magna, congue vel faucibus sed, lobortis nec risus. Aenean sed ipsum vehicula, commodo purus ac, facilisis velit. Etiam suscipit ex ex, et euismod libero cursus at. Praesent ac sagittis ipsum. Morbi in commodo quam. Donec massa libero, tincidunt eu nunc vel, ullamcorper elementum tellus. Vestibulum at porta lacus. Sed id fermentum turpis, et euismod nibh. Donec rutrum nulla id nunc facilisis lacinia. Phasellus in dui porta, laoreet tellus sollicitudin, laoreet nibh. Proin vulputate nec ex eget viverra."} 
    2 {:title "Second" 
       :text "Morbi viverra hendrerit finibus. Nunc libero enim, condimentum et tincidunt vitae, viverra id est. Aenean efficitur nisi a nibh tempus, sed laoreet dui ullamcorper. Nulla vitae lacinia risus. Vivamus lacus ante, ullamcorper non sapien et, volutpat condimentum augue. Donec rhoncus a elit condimentum suscipit. Etiam nec diam ut metus tristique porta ut sit amet felis. In et fringilla quam. Phasellus a libero eget ex convallis tincidunt. Fusce feugiat tempus tellus, a commodo metus fringilla a. Integer non ultricies eros, eu vulputate odio. Nunc laoreet libero id gravida elementum. Nullam malesuada bibendum mauris a tempor. Ut maximus aliquam aliquam. Sed in nisl eget nulla rhoncus vehicula et eu orci."} 
    3 {:title "Third" 
@@ -29,12 +30,15 @@
    5 {:title "Fifth" 
       :text "Donec facilisis volutpat auctor. Suspendisse venenatis nunc et ultricies luctus. Vestibulum erat est, gravida a volutpat quis, tincidunt vel lacus. Nunc elementum eros et massa congue sollicitudin. Praesent libero felis, fermentum quis pretium sed, consequat nec magna. Vivamus sed sollicitudin ligula. Sed malesuada urna at quam semper lacinia eu ut ligula. Donec sodales libero nulla, eget accumsan nisi rutrum et. Vivamus a condimentum enim, eu gravida est. Ut vitae egestas erat, sit amet viverra turpis. Fusce iaculis quam id sapien efficitur, sit amet blandit lacus aliquam. Donec nunc justo, rutrum et consectetur id, interdum at sapien. Vivamus non tincidunt elit. Duis ante turpis, sagittis id mollis nec, condimentum in lorem. Pellentesque eget suscipit mauris. Donec ultrices finibus venenatis."}})
 
+
+; Application definition
+
 (def app-defn {:keechma/controllers 
                  {
                   :router 
                   #:keechma.controller{:params true
                                        :type :keechma/router
-                                       :keechma/routes [["" {:page welcome/render}]
+                                       :keechma/routes [[""         {:page welcome/render}]
                                                         ["edit/:id" {:page info/render}]]}
                   :app
                   {:keechma.controller/params true}}})
@@ -50,16 +54,18 @@
   (debug event)
 
   (case event
+    :update (let [[id m] v]
+              (swap! state* update-in [:paragraphs id] merge m)
+              (router/redirect! ctrl :router {:page "home"}))
     :remove (swap! state* update :paragraphs #(dissoc % v))
     :page   (swap! state* assoc :page v)
     nil))
 
 
 (defmethod ctrl/start :app [ctrl params deps-state prev-state]
-
-  {:page :home
-   :paragraphs li})
+  {:paragraphs li})
                         
+
 ;
 ; Application 
 ; 
