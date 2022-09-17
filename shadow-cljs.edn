@@ -1,0 +1,18 @@
+{
+ :deps true
+ :http {:port 9640}
+ :nrepl {:host "0.0.0.0" :port 4023}
+ :dev-http {8180 "public"}
+ :builds
+ {:app
+  {:target :browser
+   :output-dir "public/js"
+   :compiler-options {:output-feature-set :es2018}
+   :js-options {:entry-keys ["module" "browser" "main"]}
+   :asset-path "/js"
+   :devtools {
+              :preloads [demo.dev]
+              :reload-strategy :full}
+   :modules
+   {:main ; becomes public/js/main.js
+    {:init-fn demo.app/init}}}}}
